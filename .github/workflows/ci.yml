@@ -1,0 +1,29 @@
+# Basic workflow from Github Actions
+name: CI - Build + Validate
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch: # Manual trigger for testing, REMOVE LATER
+
+jobs:
+    # Note: Multi-stage build
+  build-docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out the repository code, including submodules
+      - name: Checkout repository
+        uses: actions/checkout@v4 # latest
+        with:
+          submodules: 'true' # whisper.cpp
+
+      # Step 2: Download whisper.cpp model and build Docker image
+      - name: Build image
+        run: make build
+
+      # Step 3: Test that it works
+      - name: Run simple test
+        run: make test
