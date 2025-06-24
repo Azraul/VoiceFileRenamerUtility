@@ -7,22 +7,21 @@
 FROM ubuntu:22.04 AS builder
 LABEL stage=builder
 
-## Install build tools (C++ compiler, 'g++', 'make')
-RUN apt-get update && apt-get install -y --no-install-recommends make build-essential
+## Install build tool dependencies
+# We add 'cmake' to our list of build-time dependencies.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    make \
+    build-essential \
+    wget \
+    cmake \
+    git
 
 ## Copy whisper.cpp submodule for Stage 1.
 COPY deps/whisper.cpp/ /whisper.cpp/
 WORKDIR /whisper.cpp
 
 ## Compile whisper.cpp
-RUN make base
-
-## Download tiny.en model (for testing only)
-RUN ./models/download-ggml-model.sh tiny.en
-
-### NOTE: Change to base for increased accuracy and multi-lang support later ###
-## RUN ./models/download-ggml-model.sh base
-
+RUN make
 
 # STAGE 2: Python env
 FROM python:3.10-slim
@@ -30,8 +29,8 @@ FROM python:3.10-slim
 WORKDIR /app
 
 ## Copy compiled Whisper.cpp
-COPY --from=builder /whisper.cpp/main /usr/local/bin/whisper
-COPY --from=builder /whisper.cpp/models/ggml-base.en.bin /app/models/ggml-base.en.bin
+COPY --from=builder /whisper.cpp/build/bin/main /usr/local/bin/whisper
+COPY --from=builder /whisper.cpp/models/ggml-base.en.bin /app/models/ggml-base.bin
 
 ## Copy Python application
 COPY src/ /app/src/
