@@ -20,11 +20,10 @@ jobs:
         with:
           submodules: 'true' # whisper.cpp
 
-      # Step 2: Build the Docker image
-      - name: Build Docker image
-        run: docker build -t voice-renamer .
+      # Step 2: Download whisper.cpp model and build Docker image
+      - name: Build image
+        run: make build
 
       # Step 3: Test that it works
       - name: Run simple test
-        run: |
-          docker run --rm voice-renamer
+        run: make test

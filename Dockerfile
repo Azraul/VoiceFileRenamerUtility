@@ -28,9 +28,10 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+
 ## Copy compiled Whisper.cpp
 COPY --from=builder /whisper.cpp/build/bin/main /usr/local/bin/whisper
-COPY --from=builder /whisper.cpp/models/ggml-base.en.bin /app/models/ggml-base.bin
+COPY deps/whisper.cpp/models/ggml-base.bin /app/models/ggml-base.bin
 
 ## Copy Python application
 COPY src/ /app/src/
