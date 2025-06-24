@@ -1,0 +1,7 @@
+click
+python-slugify
+
+# Development & CI tools
+pytest
+flake8
+mypy
