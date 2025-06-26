@@ -5,8 +5,8 @@ IMAGE_NAME := voice-renamer
 MODEL_PATH := deps/whisper.cpp/models/ggml-base.bin
 MODEL_DIR  := $(dir $(MODEL_PATH))
 
-# Make Makefile self-contained.
-VENV_PYTHON := .venv/bin/python
+# Make Makefile dynamic.
+PYTHON_ENV := $(shell if [ -f .venv/bin/python ]; then echo .venv/bin/python; else echo python; fi)
 
 # Set the help function as default
 .DEFAULT_GOAL := help
@@ -49,8 +49,8 @@ test: clean build ## Runs a full build and integration test from a clean state
 
 unit-test: ## Runs the pytest unit tests
 	@echo "--- Running Unit Tests ---"
-	$(VENV_PYTHON) -m pip install pytest
-	$(VENV_PYTHON) -m pytest tests/
+	$(PYTHON_ENV) -m pip install pytest
+	$(PYTHON_ENV) -m pytest tests/
 
 # Rule if Whisper model file is missing
 $(MODEL_PATH):
