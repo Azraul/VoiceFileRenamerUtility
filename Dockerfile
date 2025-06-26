@@ -1,47 +1,39 @@
-# Dockerfile
-# First test of Multi-stage build, two stages
-# https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/
-
-# STAGE 1: Whisper.cpp build
-## Full Ubuntu env
-FROM ubuntu:22.04 AS builder
-LABEL stage=builder
+# Full Ubuntu env
+FROM ubuntu:22.04
 
 ## Install build tool dependencies
-# We add 'cmake' to our list of build-time dependencies.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     make \
     build-essential \
-    wget \
+    git \
     cmake \
-    git
+    python3.10 \
+    python3-pip \
+    && apt-get clean
 
-## Copy whisper.cpp submodule for Stage 1.
-COPY deps/whisper.cpp/ /whisper.cpp/
-WORKDIR /whisper.cpp
+## Set main application directory
+WORKDIR /app
+## And add submodule
+COPY deps/whisper.cpp/ /app/whisper.cpp/
 
-## Compile whisper.cpp
-RUN make
+## Set whisper as working directory
+WORKDIR /app/whisper.cpp
+## Compile whisper.cpp whisper-cli using cmake
+RUN cmake -B build
+RUN cmake --build build -j --config Release
 
-# STAGE 2: Python env
-FROM python:3.10-slim
+# Copy the new executable from its new location to the PATH
+RUN cp build/bin/whisper-cli /usr/local/bin/whisper-cli
 
+# Return to the main application directory
 WORKDIR /app
 
-
-## Copy compiled Whisper.cpp
-COPY --from=builder /whisper.cpp/build/bin/main /usr/local/bin/whisper
+# --- Setup Python Application ---
 COPY deps/whisper.cpp/models/ggml-base.bin /app/models/ggml-base.bin
-
-## Copy Python application
 COPY src/ /app/src/
-
-## Copy requirements and install
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python3.10 -m pip install --no-cache-dir -r requirements.txt
 
-## Default executable
-ENTRYPOINT ["python", "-m", "src.main"]
-
-# Default fallback
+# --- Final Configuration ---
+ENTRYPOINT ["python3.10", "-m", "src.main"]
 CMD ["--help"]
