@@ -42,4 +42,6 @@ This project was built with a "DevOps-first" mindset. The focus is on the automa
 # Roadmap
 
 -   [X] Setup CI/CD pipeline with container and whisper.cpp
--   [ ] Develop core functionality and comprehensive unit and integration tests with `pytest`.
+-   [x] Develop core functionality and comprehensive unit and integration tests
+-   [ ] Add linter
+-   [ ] Publish and release
