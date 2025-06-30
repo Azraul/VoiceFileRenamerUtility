@@ -6,7 +6,9 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch: # Manual trigger for testing, REMOVE LATER
+    paths-ignore:
+        - 'README.md'
+  workflow_dispatch: # Manual trigger
 
 jobs:
   unit-tests:
