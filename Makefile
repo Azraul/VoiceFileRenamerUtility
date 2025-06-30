@@ -8,6 +8,7 @@ MODEL_DIR  := $(dir $(MODEL_PATH))
 INPUT_DIR  ?= ./input
 OUTPUT_DIR ?= ./output
 SPEAKER_ID ?= "default-speaker"
+LANGUAGE   ?= "en"
 
 
 # Make Makefile dynamic.
@@ -25,12 +26,17 @@ run: build ## Runs the application on user-provided directories.
 	@echo "Input folder (host):   $(INPUT_DIR)"
 	@echo "Output folder (host):  $(OUTPUT_DIR)"
 	@echo "Speaker ID:            '$(SPEAKER_ID)'"
+	@echo "Language:              '$(LANGUAGE)'"
 	@mkdir -p $(INPUT_DIR) $(OUTPUT_DIR)
+
 	docker run --rm \
 		-v "$(shell realpath $(INPUT_DIR)):/input" \
 		-v "$(shell realpath $(OUTPUT_DIR)):/output" \
 		$(IMAGE_NAME) \
-		--speaker-id "$(SPEAKER_ID)" --input-dir /input --output-dir /output
+		--speaker-id "$(SPEAKER_ID)" \
+		--input-dir /input \
+		--output-dir /output \
+		--language "$(LANGUAGE)"
 
 
 build: $(MODEL_PATH) ## Builds Docker image
