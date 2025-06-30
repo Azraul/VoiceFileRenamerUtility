@@ -4,6 +4,11 @@
 IMAGE_NAME := voice-renamer
 MODEL_PATH := deps/whisper.cpp/models/ggml-base.bin
 MODEL_DIR  := $(dir $(MODEL_PATH))
+# Run defined variables
+INPUT_DIR  ?= ./input
+OUTPUT_DIR ?= ./output
+SPEAKER_ID ?= "default-speaker"
+
 
 # Make Makefile dynamic.
 PYTHON_ENV := $(shell if [ -f .venv/bin/python ]; then echo .venv/bin/python; else echo python; fi)
@@ -15,11 +20,24 @@ PYTHON_ENV := $(shell if [ -f .venv/bin/python ]; then echo .venv/bin/python; el
 
 all: build ## Builds the application (Default)
 
+run: build ## Runs the application on user-provided directories.
+	@echo "--- Running Voice Renamer Application ---"
+	@echo "Input folder (host):   $(INPUT_DIR)"
+	@echo "Output folder (host):  $(OUTPUT_DIR)"
+	@echo "Speaker ID:            '$(SPEAKER_ID)'"
+	@mkdir -p $(INPUT_DIR) $(OUTPUT_DIR)
+	docker run --rm \
+		-v "$(shell realpath $(INPUT_DIR)):/input" \
+		-v "$(shell realpath $(OUTPUT_DIR)):/output" \
+		$(IMAGE_NAME) \
+		--speaker-id "$(SPEAKER_ID)" --input-dir /input --output-dir /output
+
+
 build: $(MODEL_PATH) ## Builds Docker image
 	@echo "--- Building Docker Image: $(IMAGE_NAME) ---"
 	docker build -t $(IMAGE_NAME) .
 
-test: clean build ## Runs a full build and integration test from a clean state
+test: build ## Runs a full build and integration test
 	@echo "--- Running Integration Test ---"
 	@echo "--- [1/3] Setting up test environment ---"
 	rm -rf ./test_input ./test_output
@@ -38,12 +56,10 @@ test: clean build ## Runs a full build and integration test from a clean state
 	if [ -n "$$OUTPUT_FILE" ]; then \
 		echo "--- ✅ Integration Test PASSED ---"; \
 		echo "Successfully created output file: $$OUTPUT_FILE"; \
-		make clean-test; \
 	else \
 		echo "--- ❌ ERROR: Integration Test FAILED. Successful output file not found! ---"; \
 		echo "Listing contents of ./test_output before failure:"; \
 		ls -l ./test_output; \
-		make clean-test; \
 		exit 1; \
 	fi
 
