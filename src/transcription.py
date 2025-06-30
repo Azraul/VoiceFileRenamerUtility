@@ -6,14 +6,16 @@ WHISPER_MODEL_PATH = "/app/models/ggml-base.bin"
 WHISPER_EXECUTABLE_PATH = "/usr/local/bin/whisper-cli"
 
 
-def transcribe_audio(file_path: str) -> str | None:
-    logging.info(f"Attempting transcription for: {file_path}")
+def transcribe_audio(file_path: str, language: str) -> str | None:
+    logging.info(f"Attempting transcription for: {file_path} (Language:{language})")
     command = [
         WHISPER_EXECUTABLE_PATH,
         "-f",
         file_path,
         "-m",
         WHISPER_MODEL_PATH,
+        "-l",
+        language,
         "-nt",
     ]
     logging.info(f"Executing command: {' '.join(command)}")

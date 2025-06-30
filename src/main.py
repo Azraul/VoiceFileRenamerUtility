@@ -12,10 +12,10 @@ logging.basicConfig(
 
 
 def process_single_file(
-    file_path: str, speaker_id: str, recording_number: int, output_dir: str
+    file_path: str, speaker_id: str, recording_number: int, output_dir: str, language: str
 ):
     """
-    Processes a single audio file: copies, transcribes, and renames it.
+    Processes a single audio file: copies, transcribes (with language), and renames it.
     """
     filename = os.path.basename(file_path)
     logging.info("-------------------------------------------------")
@@ -26,7 +26,7 @@ def process_single_file(
     shutil.copy2(file_path, dest_path)
 
     # Transcribe the copied file
-    transcribed_text = transcription.transcribe_audio(dest_path)
+    transcribed_text = transcription.transcribe_audio(dest_path, language=language)
 
     # If transcription returns None (failure), default to an empty string.
     if transcribed_text is None:
@@ -58,7 +58,13 @@ def process_single_file(
     type=click.Path(file_okay=False),
     help="Directory where renamed files will be saved.",
 )
-def process_audio_files(speaker_id, input_dir, output_dir):
+@click.option(
+    "--language",
+    default="en", # Default English
+    show_default=True,
+    help="Language code for transcription (e.g., 'en', 'sv', 'de', 'es').",
+)
+def process_audio_files(speaker_id, input_dir, output_dir, language):
     """
     A command-line tool to batch-rename audio files based on their speech content.
     """
@@ -66,6 +72,7 @@ def process_audio_files(speaker_id, input_dir, output_dir):
     logging.info(f"Speaker ID: {speaker_id}")
     logging.info(f"Input Directory: {input_dir}")
     logging.info(f"Output Directory: {output_dir}")
+    logging.info(f"Transcription Language: {language}")
 
     # Create the output directory, if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
@@ -84,6 +91,7 @@ def process_audio_files(speaker_id, input_dir, output_dir):
             speaker_id=speaker_id,
             recording_number=i + 1,
             output_dir=output_dir,
+            language=language
         )
 
     logging.info("--- Processing Complete ---")
